@@ -1,2 +1,2 @@
 # SpinHello
-Testing the Spin .NET SDK
+Testing https://github.com/fermyon/spin-dotnet-sdk

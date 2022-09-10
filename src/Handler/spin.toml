@@ -1,0 +1,14 @@
+spin_version = "1"
+authors = ["Christoph Wille <christoph.wille@gmail.com>"]
+description = "A sample project"
+name = "SpinHello"
+version = "1.0.0"
+trigger = { type = "http", base = "/" }
+
+[[component]]
+id = "spin_hello"
+source = "bin/Release/net7.0/SpinHello.wasm"
+[component.build]
+command = "dotnet build -c Release"
+[component.trigger]
+route = "/..."
