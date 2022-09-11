@@ -1,0 +1,1 @@
+spin build && spin up --follow-all

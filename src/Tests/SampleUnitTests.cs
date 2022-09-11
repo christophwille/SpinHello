@@ -23,12 +23,25 @@ public class DefaultHandlerTests
     {
         var request = new HttpRequest()
         {
-            Url = "/"
+            Url = "/hello"
         };
 
         var result = Handler.HandleHttpRequest(request);
 
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal("Hello from .NET\n", result.BodyAsString);
+    }
+
+    [Fact]
+    public void NotFoundTest()
+    {
+        var request = new HttpRequest()
+        {
+            Url = "/thisurlforsuredoesntexist"
+        };
+
+        var result = Handler.HandleHttpRequest(request);
+
+        Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
     }
 }
