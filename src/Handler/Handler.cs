@@ -13,6 +13,9 @@ public static class Handler
         { "/uuid", GetUuidHandler }
     };
 
+    // No DI no nothing just for testing it out
+    public static IOutboundCommunication OutboundServices = new DefaultOutboundCommunication();
+
     [HttpHandler]
     public static HttpResponse HandleHttpRequest(HttpRequest request)
     {
@@ -75,7 +78,7 @@ public static class Handler
 
         try
         {
-            uuidResponse = HttpOutbound.Send(uuidRequest);
+            uuidResponse = OutboundServices.SendHttpRequest(uuidRequest);
 
         }
         catch (Exception ex)
