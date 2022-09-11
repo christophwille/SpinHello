@@ -8,6 +8,7 @@ trigger = { type = "http", base = "/" }
 [[component]]
 id = "spin_hello"
 source = "bin/Release/net7.0/SpinHello.wasm"
+allowed_http_hosts = [ "https://httpbin.org" ]
 [component.build]
 command = "dotnet build -c Release"
 [component.trigger]

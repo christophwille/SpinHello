@@ -1,5 +1,4 @@
 ﻿using Fermyon.Spin.Sdk;
-using System.Net;
 
 namespace SpinHello;
 
@@ -10,7 +9,8 @@ public static class Handler
     private static Dictionary<string, RequestHandlerDelegate> _routes = new Dictionary<string, RequestHandlerDelegate>()
     {
         { Warmup.DefaultWarmupUrl, WarmupHandler },
-        { "/hello", HelloHandler }
+        { "/hello", HelloHandler },
+        { "/uuid", GetUuidHandler }
     };
 
     [HttpHandler]
@@ -23,7 +23,7 @@ public static class Handler
 
         return new HttpResponse
         {
-            StatusCode = HttpStatusCode.NotFound,
+            StatusCode = System.Net.HttpStatusCode.NotFound,
             Headers = new Dictionary<string, string>
             {
                 { "Content-Type", "text/plain" },
@@ -36,7 +36,7 @@ public static class Handler
     {
         return new HttpResponse
         {
-            StatusCode = HttpStatusCode.OK,
+            StatusCode = System.Net.HttpStatusCode.OK,
             Headers = new Dictionary<string, string>
             {
                 { "Content-Type", "text/plain" },
@@ -49,12 +49,52 @@ public static class Handler
     {
         return new HttpResponse
         {
-            StatusCode = HttpStatusCode.OK,
+            StatusCode = System.Net.HttpStatusCode.OK,
             Headers = new Dictionary<string, string>
             {
                 { "Content-Type", "text/plain" },
             },
             BodyAsString = "warmup",
+        };
+    }
+
+    public static HttpResponse GetUuidHandler(HttpRequest request)
+    {
+        var uuidRequest = new HttpRequest
+        {
+            Method = Fermyon.Spin.Sdk.HttpMethod.Get,
+            Url = "https://httpbin.org/uuid",
+            Headers = HttpKeyValues.FromDictionary(new Dictionary<string, string>
+            {
+                { "Accept", "application/json" },
+            })
+        };
+
+        HttpResponse uuidResponse = default;
+        string exception = "";
+
+        try
+        {
+            uuidResponse = HttpOutbound.Send(uuidRequest);
+
+        }
+        catch (Exception ex)
+        {
+            // TODO: how to log this properly? (Console?)
+            exception = ex.ToString();
+        }
+
+        var status = uuidResponse.StatusCode;
+        var body = uuidResponse.BodyAsString;
+
+        return new HttpResponse
+        {
+            StatusCode = System.Net.HttpStatusCode.OK,
+            Headers = new Dictionary<string, string>
+            {
+                { "Content-Type", "application/json" },
+            },
+            BodyAsString = body,
         };
     }
 
