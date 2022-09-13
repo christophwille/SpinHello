@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using SpinHello;
@@ -70,9 +71,52 @@ public class DefaultHandlerTests
         Handler.OutboundServices = commsMock.Object;
         var result = Handler.HandleHttpRequest(request);
 
+        Handler.SetDefaultServices();
+
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
 
         var uuidResponseParsed = JsonConvert.DeserializeObject<UuidResponse>(result.BodyAsString);
         Assert.Equal(fakeUuid, uuidResponseParsed.uuid);
+    }
+
+    [Fact]
+    public void FailOutboundHttpRequestsTest()
+    {
+        var request = new HttpRequest()
+        {
+            Url = "/uuid"
+        };
+
+        var commsMock = new Mock<IOutboundCommunication>();
+        commsMock.Setup(m => m.SendHttpRequest(It.IsAny<HttpRequest>()))
+                    .Throws(new IOException("throw"));
+
+        var loggerMock = new Mock<ILogger>();
+        loggerMock.Setup(x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+            )
+        );
+
+        Handler.OutboundServices = commsMock.Object;
+        Handler.Logger = loggerMock.Object;
+        var result = Handler.HandleHttpRequest(request);
+
+        Handler.SetDefaultServices();
+
+        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+        loggerMock.Verify(
+            m => m.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once,
+            "At least one call to LogError expected"
+        );
     }
 }

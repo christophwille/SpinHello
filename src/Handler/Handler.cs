@@ -1,4 +1,5 @@
 ﻿using Fermyon.Spin.Sdk;
+using Microsoft.Extensions.Logging;
 
 namespace SpinHello;
 
@@ -13,8 +14,20 @@ public static class Handler
         { "/uuid", GetUuidHandler }
     };
 
+    static Handler()
+    {
+        SetDefaultServices();
+    }
+
+    public static void SetDefaultServices()
+    {
+        Logger = new SpinLogger();
+        OutboundServices = new DefaultOutboundCommunication();
+    }
+
     // No DI no nothing just for testing it out
-    public static IOutboundCommunication OutboundServices = new DefaultOutboundCommunication();
+    public static IOutboundCommunication OutboundServices;
+    public static ILogger Logger;
 
     [HttpHandler]
     public static HttpResponse HandleHttpRequest(HttpRequest request)
@@ -74,7 +87,6 @@ public static class Handler
         };
 
         HttpResponse uuidResponse = default;
-        string exception = "";
 
         try
         {
@@ -83,11 +95,16 @@ public static class Handler
         }
         catch (Exception ex)
         {
-            // TODO: how to log this properly? (Console?)
-            exception = ex.ToString();
+            Logger.LogError(ex, $"Uuid failed: {ex.Message}");
+            return new HttpResponse
+            {
+                StatusCode = System.Net.HttpStatusCode.BadRequest
+            };
         }
 
         var status = uuidResponse.StatusCode;
+        Logger.LogInformation($"Uuid status code: {status}");
+
         var body = uuidResponse.BodyAsString;
 
         return new HttpResponse
